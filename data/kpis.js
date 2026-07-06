@@ -1,0 +1,4 @@
+window.DATA_KPIS = [
+  { "nombre": "% Cumplimiento Volúmen", "valor": 81, "periodo": "P7 25 de Junio" },
+  { "nombre": "% Cumplimiento Faenas", "valor": 30, "periodo": "P7 25 de Junio" }
+];

@@ -1,0 +1,7 @@
+window.DATA_INVERSION = {
+  "delta": 1.1,
+  "estado": "SIN INVERSION",
+  "inversion": false,
+  "hora": "08:00",
+  "fecha": "06-07-26"
+};

@@ -1,0 +1,12 @@
+{
+  "numero": "162",
+  "condicion": "MAREJADA",
+  "emitida": "06/07/2026 08:00",
+  "lpg_amarre": "SI",
+  "lpg_desamarre": "SI",
+  "monoboya_amarre": "SI",
+  "monoboya_desamarre": "SI",
+  "practicos": "SI",
+  "fondeo": "SI",
+  "buceo": "NO"
+}

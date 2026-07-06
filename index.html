@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Dashboard Operacional — División de Operaciones Marítimas, Terminal Marítimo Quintero (TMQ), ENAP. Monitoreo en tiempo real de naves, condiciones del puerto y KPIs operacionales." />
+  <meta name="theme-color" content="#0A0E1A" />
+  <title>Dashboard Operacional — TMQ · ENAP</title>
+
+  <!-- Favicon inline SVG -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230A0E1A'/><text y='24' font-size='22' font-family='monospace' font-weight='bold' fill='%2300D9FF'>⚓</text></svg>" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ══════════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════════════ -->
+    <header id="header" role="banner">
+
+      <!-- Logo / Identidad -->
+      <div class="header-logo">
+        <img src="logo-enap.png" alt="ENAP" class="logo-img" title="ENAP" />
+      </div>
+
+      <!-- Centro: Títulos -->
+      <div class="header-titles">
+        <div class="header-title">DIVISIÓN DE OPERACIONES MARÍTIMAS</div>
+        <div class="header-subtitle-main">Terminal Marítimo Quintero</div>
+        <div class="header-status">
+          <span class="live-dot" id="main-live-dot" aria-label="Conexión activa"></span>
+          <span>EN VIVO</span>
+          <span style="color:var(--txt-dim)">·</span>
+          <span id="conn-naves-wrap">
+            <span class="conn-indicator">
+              <span class="conn-dot loading" data-conn="naves"></span>
+              <span>Naves</span>
+            </span>
+          </span>
+          <span class="conn-indicator">
+            <span class="conn-dot loading" data-conn="ventilacion"></span>
+            <span>Ventilación</span>
+          </span>
+          <span class="conn-indicator">
+            <span class="conn-dot loading" data-conn="inversion"></span>
+            <span>Inversión</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Derecha: Reloj y Meta -->
+      <div class="header-clock-block">
+        <div class="clock-time" id="clock-time" aria-live="polite" aria-label="Hora actual">00:00:00</div>
+        <div class="clock-date" id="clock-date">—</div>
+        <div class="update-label" style="margin-top: 4px;">
+          🕐 Actualizado: <strong id="last-update">—</strong>
+        </div>
+      </div>
+
+    </header>
+
+    <!-- ══════════════════════════════════════════════════════
+       TABS MOBILE (solo visible en pantallas pequeñas)
+  ════════════════════════════════════════════════════════ -->
+    <nav id="mobile-tabs" role="navigation" aria-label="Navegación por secciones">
+      <button class="tab-btn active" data-tab="naves" id="tab-naves" aria-selected="true">
+        <span class="tab-icon">⚓</span><span>Naves</span>
+      </button>
+      <button class="tab-btn" data-tab="condiciones" id="tab-condiciones" aria-selected="false">
+        <span class="tab-icon">🌊</span><span>Condiciones</span>
+      </button>
+      <button class="tab-btn" data-tab="mapa" id="tab-mapa" aria-selected="false">
+        <span class="tab-icon">🗺️</span><span>Mapa</span>
+      </button>
+      <button class="tab-btn" data-tab="kpis" id="tab-kpis" aria-selected="false">
+        <span class="tab-icon">📊</span><span>KPIs</span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════
+       GRID PRINCIPAL
+  ════════════════════════════════════════════════════════ -->
+    <main id="main-grid" role="main">
+
+      <!-- ── COLUMNA IZQUIERDA ───────────────────────────── -->
+      <div class="col-left">
+
+        <!-- ─── TABLA DE NAVES ─────────────────────────── -->
+        <section class="card tab-section active" id="section-naves" aria-labelledby="h-naves">
+
+          <!-- Encabezado de la card -->
+          <div class="card-header">
+            <h2 class="card-title" id="h-naves">
+              <span class="card-title-icon">⚓</span>
+              Programación de Naves
+              <span class="live-dot" style="width:6px;height:6px;margin-left:4px;"></span>
+            </h2>
+            <span id="tabla-counter" style="font-size:11px;color:var(--txt-dim);">—</span>
+          </div>
+
+          <!-- Filtros -->
+          <div class="filters-row" role="group" aria-label="Filtros de tabla">
+            <!-- Filtros de FECHA -->
+            <span class="filter-label">📅 Fecha:</span>
+            <div class="filter-group" id="filtros-fecha" role="group" aria-label="Rango de fechas">
+              <!-- Generado por tabla.js -->
+            </div>
+
+            <div class="filter-sep" aria-hidden="true"></div>
+
+            <!-- Filtros de TERMINAL -->
+            <span class="filter-label">🏭 Terminal:</span>
+            <div class="filter-group" id="filtros-terminal" role="group" aria-label="Terminal">
+              <!-- Generado por tabla.js -->
+            </div>
+
+            <div class="filter-sep" aria-hidden="true"></div>
+
+            <!-- Filtros de TURNO -->
+            <span class="filter-label">🕐 Turno:</span>
+            <div class="filter-group" id="filtros-turno" role="group" aria-label="Turno">
+              <!-- Generado por tabla.js -->
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="tabla-wrapper" role="region" aria-label="Tabla de naves">
+            <table id="tabla-naves" aria-label="Programación de naves por terminal y turno">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Turno</th>
+                  <th scope="col" class="th-terminal" data-col="lpg">LPG</th>
+                  <th scope="col" class="th-terminal" data-col="multicrudo">Multicrudo</th>
+                  <th scope="col" class="th-terminal" data-col="monoboya">Monoboya</th>
+                  <th scope="col" class="th-terminal" data-col="barcaza">Barcaza</th>
+                  <th scope="col" class="th-terminal" data-col="oxiquim">Oxiquim</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-naves-body">
+                <!-- Spinner de carga inicial -->
+                <tr>
+                  <td colspan="7" style="text-align:center;padding:30px 0;">
+                    <div class="spinner"></div>
+                    <div style="font-size:12px;color:var(--txt-dim);margin-top:8px;">Cargando datos de la planilla…
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Estado vacío -->
+            <div class="tabla-empty hidden" id="tabla-vacia" role="status">
+              <div class="empty-icon">🔍</div>
+              <p>No hay naves programadas para el período seleccionado.</p>
+              <p style="font-size:11px;color:var(--txt-dim);margin-top:4px;">Prueba con un rango de fechas más amplio.
+              </p>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ─── PANEL CONDICIONES ──────────────────────── -->
+        <section class="card tab-section active" id="section-condiciones" aria-labelledby="h-condiciones">
+          <div class="card-header" id="card-condiciones">
+            <h2 class="card-title" id="h-condiciones">
+              <span class="card-title-icon">🌡️</span>
+              Condiciones Operativas
+            </h2>
+            <div style="display:flex;gap:6px;">
+              <span class="conn-indicator">
+                <span class="conn-dot loading" data-conn="inversion"></span>
+                <span style="font-size:9px;">Inv.Térm</span>
+              </span>
+              <span class="conn-indicator">
+                <span class="conn-dot loading" data-conn="ventilacion"></span>
+                <span style="font-size:9px;">Ventil.</span>
+              </span>
+              <span class="conn-indicator">
+                <span class="conn-dot loading" data-conn="cpuerto"></span>
+                <span style="font-size:9px;">Puerto</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="condiciones-carousel" id="condiciones-carousel">
+            <div class="cond-panel" id="panel-inversion">
+              <div class="spinner"></div>
+            </div>
+            <div class="cond-panel" id="panel-ventilacion"></div>
+            <div class="cond-panel" id="panel-cpuerto"></div>
+          </div>
+
+          <div class="carousel-dots" id="condiciones-dots" role="tablist" aria-label="Navegar paneles de condiciones">
+          </div>
+        </section>
+
+      </div><!-- /col-left -->
+
+      <!-- ── COLUMNA DERECHA ─────────────────────────────── -->
+      <div class="col-right">
+
+        <!-- ─── MAPA WINDY ─────────────────────────────── -->
+        <section class="card tab-section active" id="section-mapa" aria-labelledby="h-mapa"
+          style="flex:1;display:flex;flex-direction:column;">
+          <div class="card-header">
+            <h2 class="card-title" id="h-mapa">
+              <span class="card-title-icon">🗺️</span>
+              Mapa — Terminal Quintero
+            </h2>
+            <a href="https://www.windy.com/?wind,surface,-32.77,-71.53,11" target="_blank" rel="noopener noreferrer"
+              style="font-size:10px;color:var(--txt-dim);text-decoration:none;" title="Abrir Windy en nueva pestaña">
+              Abrir ↗
+            </a>
+          </div>
+
+          <div class="mapa-iframe-wrap" style="flex:1;">
+            <iframe id="windy-iframe" title="Mapa meteorológico y marítimo — Terminal Quintero (Windy.com)"
+              src="https://embed.windy.com/embed2.html?lat=-32.77&lon=-71.53&detailLat=-32.77&detailLon=-71.53&zoom=11&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+              allowfullscreen loading="lazy" referrerpolicy="no-referrer">
+            </iframe>
+          </div>
+        </section>
+
+        <!-- ─── KPIs ───────────────────────────────────── -->
+        <section class="card" id="card-kpis" aria-labelledby="h-kpis">
+          <div class="card-header">
+            <h2 class="card-title" id="h-kpis">
+              <span class="card-title-icon">📊</span>
+              Indicadores de Rendimiento
+            </h2>
+            <span class="conn-indicator">
+              <span class="conn-dot loading" data-conn="kpis"></span>
+              <span style="font-size:9px;">KPIs</span>
+            </span>
+          </div>
+
+          <!-- Carousel de KPIs (generado por kpis.js) -->
+          <div class="kpi-carousel" id="kpi-carousel">
+            <div class="kpi-panel active" id="kpi-panel-0">
+              <div style="padding:20px;text-align:center;">
+                <div class="spinner"></div>
+                <div style="font-size:11px;color:var(--txt-dim);margin-top:8px;">Cargando KPIs…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-dots" id="kpi-dots"></div>
+        </section>
+
+      </div><!-- /col-right -->
+
+    </main><!-- /main-grid -->
+
+  </div><!-- /app -->
+
+  <!-- ══════════════════════════════════════════════════════
+     SCRIPTS (orden importante: dependencias primero)
+════════════════════════════════════════════════════════ -->
+  <script src="js/csvParser.js"></script>
+  <script src="js/dataFetcher.js"></script>
+  <script src="js/tabla.js"></script>
+  <script src="js/condiciones.js"></script>
+  <script src="js/kpis.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+
+</html>
