@@ -75,19 +75,20 @@
 })();
 
 // ── Inicialización principal ─────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   console.log('[TMQ Dashboard] Iniciando...');
 
-  // 1. Cargar todos los datos
-  await window.TMQ.dataFetcher.cargarTodo();
-
-  // 2. Inicializar módulos de UI
+  // 1. Inicializar módulos de UI de inmediato (para no mostrar pantalla en blanco)
   window.TMQ.tabla.init();
   window.TMQ.condiciones.init();
   window.TMQ.kpis.init();
 
+  // 2. Cargar todos los datos en segundo plano
+  // No usamos "await" para que el dashboard aparezca instantáneamente.
+  window.TMQ.dataFetcher.cargarTodo();
+
   // 3. Iniciar polling continuo
   window.TMQ.dataFetcher.iniciarPolling();
 
-  console.log('[TMQ Dashboard] Listo ✓');
+  console.log('[TMQ Dashboard] Interfaz lista ✓, cargando datos...');
 });
