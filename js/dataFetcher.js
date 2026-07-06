@@ -15,9 +15,7 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8HsbsBKbuv6xz
 // ── Caché de último valor válido ─────────────────────────────
 const cache = {
   naves:       null,
-  ventilacion: null,
-  inversion:   null,
-  cpuerto:     null,
+  condiciones: null,   // unifica ventilacion + inversion + cpuerto
   kpis:        null,
   turnos:      null,
 };
@@ -167,8 +165,6 @@ async function fetchNaves() {
 
 /**
  * Construye la URL relativa a /data/ según entorno.
- * - Si corre en localhost/file: usa ruta relativa ./data/
- * - Si corre en GitHub Pages / Vercel: misma lógica funciona
  * @param {string} archivo
  * @returns {string}
  */
@@ -177,33 +173,93 @@ function dataURL(archivo) {
 }
 
 /**
+ * Carga el archivo condiciones.json (generado por GitHub Actions cada 3h).
+ * Distribuye ventilacion, inversion y cpuerto a sus respectivos callbacks.
+ */
+async function fetchCondiciones() {
+  setConexion('condiciones', 'loading');
+  setConexion('ventilacion', 'loading');
+  setConexion('inversion',   'loading');
+  setConexion('cpuerto',     'loading');
+
+  try {
+    let data;
+    if (window.location.protocol === 'file:') {
+      // Local: inyectar como <script> no funciona con JSON puro.
+      // Usamos fetchJS con un wrapper JS si existe, sino fallback al JSON inicial.
+      const url = dataURL('condiciones.json') + '?t=' + Date.now();
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      data = await res.json();
+    } else {
+      // Web (Vercel): fetch normal sin restricciones CORS
+      const res = await fetch(dataURL('condiciones.json') + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      data = await res.json();
+    }
+
+    cache.condiciones = data;
+
+    // Distribuir a cada sub-clave que el resto del sistema espera
+    const vent = data.ventilacion || null;
+    const inv  = data.inversion   || null;
+    const cp   = data.puerto      || null;
+
+    setConexion('condiciones', 'ok');
+    setConexion('ventilacion', vent ? 'ok' : 'error');
+    setConexion('inversion',   inv  ? 'ok' : 'error');
+    setConexion('cpuerto',     cp   ? 'ok' : 'error');
+
+    notificar('ventilacion', vent);
+    notificar('inversion',   inv);
+    notificar('cpuerto',     cp);
+
+    return data;
+  } catch (err) {
+    console.warn('[dataFetcher] Error al cargar condiciones.json:', err.message);
+    setConexion('condiciones', 'error');
+    setConexion('ventilacion', 'error');
+    setConexion('inversion',   'error');
+    setConexion('cpuerto',     'error');
+
+    // Fallback: usar caché anterior si existe
+    const cached = cache.condiciones;
+    if (cached) {
+      notificar('ventilacion', cached.ventilacion || null);
+      notificar('inversion',   cached.inversion   || null);
+      notificar('cpuerto',     cached.puerto      || null);
+    }
+    return cached;
+  }
+}
+
+/**
  * Carga inicial de todas las fuentes de datos.
  */
 async function cargarTodo() {
   await Promise.allSettled([
     fetchNaves(),
-    fetchJS('ventilacion', dataURL('ventilacion.js')),
-    fetchJS('inversion',   dataURL('inversion.js')),
-    fetchJS('cpuerto',     dataURL('cpuerto.js')),
-    fetchJS('kpis',        dataURL('kpis.js')),
-    fetchJS('turnos',      dataURL('turnos.js')),
+    fetchCondiciones(),                         // ventilacion + inversion + cpuerto en uno
+    fetchJS('kpis',   dataURL('kpis.js')),
+    fetchJS('turnos', dataURL('turnos.js')),
   ]);
 }
 
 /**
  * Inicia el polling automático.
- * - Naves: cada 5 minutos
- * - JSONs: cada 5 minutos (ventilacion e inversion se actualizan cada 30 min en Actions)
+ * - Naves:       cada 5 minutos
+ * - Condiciones: cada 15 minutos (GitHub Actions actualiza cada 3h)
+ * - KPIs/Turnos: cada 10 minutos
  */
 function iniciarPolling() {
-  const CINCO_MIN = 5 * 60 * 1000;
+  const CINCO_MIN   = 5  * 60 * 1000;
+  const DIEZ_MIN    = 10 * 60 * 1000;
+  const QUINCE_MIN  = 15 * 60 * 1000;
 
-  setInterval(fetchNaves, CINCO_MIN);
-  setInterval(() => fetchJS('ventilacion', dataURL('ventilacion.js')), CINCO_MIN);
-  setInterval(() => fetchJS('inversion',   dataURL('inversion.js')),   CINCO_MIN);
-  setInterval(() => fetchJS('cpuerto',     dataURL('cpuerto.js')),     CINCO_MIN);
-  setInterval(() => fetchJS('kpis',        dataURL('kpis.js')),        CINCO_MIN);
-  setInterval(() => fetchJS('turnos',      dataURL('turnos.js')),      CINCO_MIN);
+  setInterval(fetchNaves,       CINCO_MIN);
+  setInterval(fetchCondiciones, QUINCE_MIN);
+  setInterval(() => fetchJS('kpis',   dataURL('kpis.js')),   DIEZ_MIN);
+  setInterval(() => fetchJS('turnos', dataURL('turnos.js')), DIEZ_MIN);
 }
 
 // ── API pública ──────────────────────────────────────────────

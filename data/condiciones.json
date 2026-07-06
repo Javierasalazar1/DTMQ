@@ -1,0 +1,24 @@
+{
+  "actualizado": "06-07-2026 16:00",
+  "puerto": {
+    "estado": "Ver SITPORT",
+    "condicion": "Ver SITPORT",
+    "numero": "—",
+    "emitida": "06-07-2026 16:00",
+    "fuente": "manual",
+    "nota": "Consultar sitport.directemar.cl para estado actualizado"
+  },
+  "ventilacion": {
+    "codigo": "B",
+    "estado": "Buena",
+    "hora_actual": "08:00",
+    "actualizado": "06-07-2026 08:00"
+  },
+  "inversion": {
+    "delta": 4.56,
+    "estado": "CON INVERSIÓN",
+    "inversion": true,
+    "hora": "07:00",
+    "fecha": "06-07-2026"
+  }
+}
