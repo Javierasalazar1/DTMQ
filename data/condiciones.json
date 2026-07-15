@@ -1,10 +1,10 @@
 {
-  "actualizado": "15-07-2026 04:15",
+  "actualizado": "15-07-2026 06:52",
   "puerto": {
     "estado": "Ver SITPORT",
     "condicion": "Ver SITPORT",
     "numero": "—",
-    "emitida": "15-07-2026 04:15",
+    "emitida": "15-07-2026 06:52",
     "fuente": "manual",
     "nota": "Consultar sitport.directemar.cl para estado actualizado"
   },
@@ -12,7 +12,7 @@
     "codigo": "R",
     "estado": "Regular",
     "hora_actual": "13:00",
-    "actualizado": "15-07-2026 04:14"
+    "actualizado": "15-07-2026 06:51"
   },
   "inversion": {
     "estado": "Sin datos",
