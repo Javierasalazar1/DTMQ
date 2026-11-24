@@ -1,18 +1,18 @@
 {
-  "actualizado": "24-11-2026 04:54",
+  "actualizado": "24-11-2026 16:00",
   "puerto": {
     "estado": "Ver SITPORT",
     "condicion": "Ver SITPORT",
     "numero": "—",
-    "emitida": "24-11-2026 04:54",
+    "emitida": "24-11-2026 16:00",
     "fuente": "manual",
     "nota": "Consultar sitport.directemar.cl para estado actualizado"
   },
   "ventilacion": {
     "codigo": "R",
     "estado": "Regular",
-    "hora_actual": "9:16",
-    "actualizado": "24-11-2026 04:53"
+    "hora_actual": "13:00",
+    "actualizado": "24-11-2026 15:59"
   },
   "inversion": {
     "estado": "Sin datos",
